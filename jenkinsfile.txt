@@ -6,7 +6,10 @@ pipeline
 	{
 		stages ('Code Checkout')
 		{
-			git 'https://github.com/ershekhar007/igp-test.git'
+			steps
+			{
+				git 'https://github.com/ershekhar007/igp-test.git'
+		      }
 		}
 	}
 
