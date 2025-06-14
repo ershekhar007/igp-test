@@ -1,0 +1,22 @@
+---
+- name: Deploy Retail App to Kubernetes
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars:
+    kubeconfig_path: "C:/kube/config"  # Or ~/.kube/config on Linux/Mac
+
+  tasks:
+
+    - name: Apply deployment.yaml
+      community.kubernetes.k8s:
+        state: present
+        src: "{{ playbook_dir }}/../kubernetes/deployment.yaml"
+        kubeconfig: "{{ kubeconfig_path }}"
+
+    - name: Apply service.yaml
+      community.kubernetes.k8s:
+        state: present
+        src: "{{ playbook_dir }}/../kubernetes/service.yaml"
+        kubeconfig: "{{ kubeconfig_path }}"
