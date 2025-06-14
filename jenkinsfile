@@ -2,38 +2,87 @@ pipeline
 {
     agent any
 
+    environment 
+	{
+        DOCKER_IMAGE = "yourdockerhubusername/retail-cart"
+        DOCKER_TAG = "v1.0"
+        DOCKER_CREDENTIALS_ID = "dockerhub-creds"
+        KUBE_DEPLOY_DIR = "kubernetes"
+    }
+
     stages 
 	{
-        stage('Code Checkout') 
+        stage('Checkout Code') 
 		{
             steps 
 			{
-                git 'https://github.com/ershekhar007/igp-test.git'
+                git 'https://github.com/yourusername/your-repo.git'
             }
         }
 
-        stage('Code Compile') 
+        stage('Build with Maven') 
 		{
             steps 
 			{
-                bat 'mvn compile'
+                bat 'mvn clean package'
             }
         }
 
-        stage('Unit Test') 
+        stage('Build Docker Image') 
 		{
             steps 
 			{
-                bat 'mvn test'
+                bat "docker build -t %DOCKER_IMAGE%:%DOCKER_TAG% ."
             }
         }
 
-        stage('Code Packaging') 
+        stage('Push to Docker Hub') 
 		{
             steps 
 			{
-                bat 'mvn package'
+                script 
+				{
+                    docker.withRegistry('', DOCKER_CREDENTIALS_ID) 
+					{
+                        bat "docker push %DOCKER_IMAGE%:%DOCKER_TAG%"
+                    }
+                }
             }
+        }
+
+        stage('Deploy on Docker (Local Test)') 
+		{
+            steps 
+			{
+                bat '''
+                docker stop retail-app || echo Not running
+                docker rm retail-app || echo Not existing
+                docker run -d -p 32768:8080 --name retail-app %DOCKER_IMAGE%:%DOCKER_TAG%
+                '''
+            }
+        }
+
+        stage('Deploy to Kubernetes') 
+		{
+            steps 
+			{
+                bat """
+                kubectl apply -f %KUBE_DEPLOY_DIR%\\deployment.yaml
+                kubectl apply -f %KUBE_DEPLOY_DIR%\\service.yaml
+                """
+            }
+        }
+    }
+
+    post 
+	{
+        success 
+		{
+            echo "Pipeline executed successfully. App deployed to Kubernetes."
+        }
+        failure 
+		{
+            echo "Pipeline failed. Check the logs above."
         }
     }
 }
