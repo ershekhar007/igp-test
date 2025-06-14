@@ -4,7 +4,7 @@ pipeline
 
     environment 
 	{
-        DOCKER_IMAGE = "yourdockerhubusername/retail-cart"
+        DOCKER_IMAGE = "ershekhar07/retail-cart"
         DOCKER_TAG = "v1.0"
         DOCKER_CREDENTIALS_ID = "dockerhub-creds"
         KUBE_DEPLOY_DIR = "kubernetes"
